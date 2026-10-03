@@ -228,15 +228,16 @@ namespace TVHeadEnd.DataHelper
                         {
                         }
 
-                        // TVHeadend sends a recording's artwork as "image" (the poster, or the EPG
-                        // still it was recorded from) and "fanartImage" (a wide backdrop). Jellyfin's
-                        // channel API carries a single image per item, so prefer the poster and fall
-                        // back to the fanart. The value may be an imagecache reference relative to the
-                        // web root; HTSConnectionHandler resolves it into an absolute URL.
-                        string? image = m.GetString("image", null);
+                        // TVHeadend sends a recording's artwork as "fanartImage" (a wide backdrop)
+                        // and "image" (the poster, or the EPG still it was recorded from). Jellyfin's
+                        // channel API carries a single image per item, and every surface that lists
+                        // recordings draws them as wide cards, so prefer the fanart and fall back to
+                        // the poster. The value may be an imagecache reference relative to the web
+                        // root; HTSConnectionHandler resolves it into an absolute URL.
+                        string? image = m.GetString("fanartImage", null);
                         if (string.IsNullOrEmpty(image))
                         {
-                            image = m.GetString("fanartImage", null);
+                            image = m.GetString("image", null);
                         }
 
                         ri.ImageUrl = string.IsNullOrEmpty(image) ? null : image;
