@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -413,9 +414,19 @@ namespace TVHeadEnd
             return _forceDeinterlace;
         }
 
-        public Task<IEnumerable<MyRecordingInfo>> BuildDvrInfos(CancellationToken cancellationToken)
+        public async Task<IEnumerable<MyRecordingInfo>> BuildDvrInfos(CancellationToken cancellationToken)
         {
-            return _dvrDataHelper.BuildDvrInfos(cancellationToken);
+            var recordings = (await _dvrDataHelper.BuildDvrInfos(cancellationToken).ConfigureAwait(false)).ToList();
+
+            // Like program images, recording artwork arrives as an imagecache reference relative
+            // to the web root from HTSP v34 on. Resolve it into an absolute URL Jellyfin can fetch.
+            foreach (var recording in recordings)
+            {
+                recording.ImageUrl = ResolveImageUrl(recording.ImageUrl);
+                recording.HasImage = !string.IsNullOrEmpty(recording.ImageUrl);
+            }
+
+            return recordings;
         }
 
         public Task<IEnumerable<SeriesTimerInfo>> BuildAutorecInfos(CancellationToken cancellationToken)
